@@ -122,6 +122,55 @@ update_config(
 )
 ```
 
+## Running as an HTTP API (Docker friendly)
+
+The project includes a lightweight HTTP server so tools like n8n can pull data
+over REST without writing Python code.
+
+Start the server locally:
+
+```bash
+python -m nflreadpy.api_server
+```
+
+Or build and run it in Docker:
+
+```bash
+docker build -t nflreadpy-api .
+docker run -p 8000:8000 nflreadpy-api
+
+# Use a different host port if 8000 is already in use on your machine
+# (e.g., map host port 8010 to the container's 8000)
+docker run -p 8010:8000 nflreadpy-api
+```
+
+The server speaks plain HTTP only. If you front it with a reverse proxy that
+terminates TLS, be sure the proxy forwards HTTP traffic to the container. Using
+`https://` directly against the container port will result in a `400` response
+indicating that TLS is not supported.
+
+Available endpoints:
+
+- `GET /health` – basic readiness probe
+- `GET /loaders` – list supported loader functions and their parameters
+- `POST /load` – run a loader and return JSON data
+
+Example request to fetch 2023 schedules (limited to 50 rows):
+
+```bash
+curl -X POST http://localhost:8000/load \
+  -H "Content-Type: application/json" \
+  -d '{"loader": "load_schedules", "params": {"seasons": 2023}, "limit": 50}'
+```
+
+Environment variables control the host/port if you need to customize them:
+
+- `NFLREADPY_HOST` (default `0.0.0.0`)
+- `NFLREADPY_PORT` (default `8000`)
+
+The Docker image installs the `rtcompat` build of Polars to avoid CPU feature
+warnings on hosts without AVX2/FMA support.
+
 ## Getting help
 
 The best places to get help on this package are:
