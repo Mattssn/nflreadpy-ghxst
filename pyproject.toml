@@ -27,7 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.28.0",
-    "polars>=0.20.0",
+    "polars[rtcompat]>=0.20.0",
     "platformdirs>=3.0.0",
     "tqdm>=4.64.0",
     "pydantic>=2.0.0",
