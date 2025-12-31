@@ -122,6 +122,43 @@ update_config(
 )
 ```
 
+## Running as an HTTP API (Docker friendly)
+
+The project includes a lightweight HTTP server so tools like n8n can pull data
+over REST without writing Python code.
+
+Start the server locally:
+
+```bash
+python -m nflreadpy.api_server
+```
+
+Or build and run it in Docker:
+
+```bash
+docker build -t nflreadpy-api .
+docker run -p 8000:8000 nflreadpy-api
+```
+
+Available endpoints:
+
+- `GET /health` – basic readiness probe
+- `GET /loaders` – list supported loader functions and their parameters
+- `POST /load` – run a loader and return JSON data
+
+Example request to fetch 2023 schedules (limited to 50 rows):
+
+```bash
+curl -X POST http://localhost:8000/load \
+  -H "Content-Type: application/json" \
+  -d '{"loader": "load_schedules", "params": {"seasons": 2023}, "limit": 50}'
+```
+
+Environment variables control the host/port if you need to customize them:
+
+- `NFLREADPY_HOST` (default `0.0.0.0`)
+- `NFLREADPY_PORT` (default `8000`)
+
 ## Getting help
 
 The best places to get help on this package are:
