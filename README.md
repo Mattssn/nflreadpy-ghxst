@@ -138,6 +138,10 @@ Or build and run it in Docker:
 ```bash
 docker build -t nflreadpy-api .
 docker run -p 8000:8000 nflreadpy-api
+
+# Use a different host port if 8000 is already in use on your machine
+# (e.g., map host port 8010 to the container's 8000)
+docker run -p 8010:8000 nflreadpy-api
 ```
 
 Available endpoints:
@@ -158,6 +162,9 @@ Environment variables control the host/port if you need to customize them:
 
 - `NFLREADPY_HOST` (default `0.0.0.0`)
 - `NFLREADPY_PORT` (default `8000`)
+
+The Docker image installs the `rtcompat` build of Polars to avoid CPU feature
+warnings on hosts without AVX2/FMA support.
 
 ## Getting help
 
