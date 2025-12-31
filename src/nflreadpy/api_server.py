@@ -162,58 +162,8 @@ def _send_json(
 class LoaderRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
-    def handle_one_request(self) -> None:
-        """Handle a single HTTP request with TLS guardrails.
-
-        Some clients (or load balancers) may attempt to speak TLS to this
-        server, which only supports plain HTTP. The default
-        ``BaseHTTPRequestHandler`` surfaces that as noisy "Bad request version"
-        logs. We detect the TLS handshake byte prefix and return a clear error
-        instead of polluting the logs with unreadable bytes.
-        """
-
-        self.raw_requestline = self.rfile.readline(65537)
-        if self.raw_requestline.startswith((b"\x16\x03", b"\x80")):
-            self.send_error(
-                HTTPStatus.BAD_REQUEST,
-                "TLS/SSL is not supported; connect with plain HTTP.",
-            )
-            self.close_connection = True
-            return
-
-        if len(self.raw_requestline) > 65536:
-            self.requestline = ""
-            self.request_version = ""
-            self.command = ""
-            self.send_error(HTTPStatus.REQUEST_URI_TOO_LONG)
-            return
-        if not self.raw_requestline:
-            self.close_connection = True
-            return
-        if not self.parse_request():
-            return
-        mname = "do_" + self.command
-        if not hasattr(self, mname):
-            self.send_error(
-                HTTPStatus.NOT_IMPLEMENTED,
-                f"Unsupported method ({self.command})",
-            )
-            return
-        method = getattr(self, mname)
-        method()
-
     def do_GET(self) -> None:  # noqa: N802
         parsed_path = urlparse(self.path)
-        if parsed_path.path == "/":
-            _send_json(
-                self,
-                HTTPStatus.OK,
-                {
-                    "status": "ok",
-                    "message": "Use /health, /loaders, or POST /load for data",
-                },
-            )
-            return
         if parsed_path.path == "/health":
             _send_json(self, HTTPStatus.OK, {"status": "ok"})
             return

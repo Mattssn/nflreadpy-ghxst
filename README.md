@@ -144,11 +144,6 @@ docker run -p 8000:8000 nflreadpy-api
 docker run -p 8010:8000 nflreadpy-api
 ```
 
-The server speaks plain HTTP only. If you front it with a reverse proxy that
-terminates TLS, be sure the proxy forwards HTTP traffic to the container. Using
-`https://` directly against the container port will result in a `400` response
-indicating that TLS is not supported.
-
 Available endpoints:
 
 - `GET /health` – basic readiness probe
